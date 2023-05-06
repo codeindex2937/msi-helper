@@ -23,8 +23,6 @@ func (h Helper) AddDesktopShortcut(
 		Shortcut:  "desktop_shortcut",
 		Directory: directory,
 		Name:      name,
-		Arguments: model.OptString(""),
-		IconIndex: model.OptInt16(0),
 		ShowCmd:   model.OptInt16(1),
 	}
 	if icon != nil {
@@ -95,7 +93,6 @@ func (h Helper) AddMenuShortcut(
 		WkDir:     model.OptString(comp.Directory),
 		Directory: directory,
 		Name:      linkName,
-		Arguments: model.OptString(""),
 		IconIndex: model.OptInt16(0),
 		ShowCmd:   model.OptInt16(1),
 	}
@@ -114,7 +111,7 @@ func (h Helper) AddMenuShortcut(
 	}
 	if err := h.DB.Insert(model.DrLocator{
 		Signature: signature,
-		Path:      model.OptString(`[ProgramMenuFolder]\Example`),
+		Path:      model.OptString(fmt.Sprintf(`[ProgramMenuFolder]\%v`, folderName)),
 	}); err != nil {
 		return err
 	}
