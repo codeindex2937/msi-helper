@@ -10,12 +10,13 @@ import (
 	model "github.com/codeindex2937/msi-helper/model"
 )
 
-func NewComponent(feature, name, dir string) model.Component {
+func NewComponent(feature, id, name, dir string) model.Component {
 	return model.Component{
-		Feature:   feature,
-		Component: name,
-		Directory: dir,
-		Files:     map[string]model.FileCredential{},
+		Feature:     feature,
+		Component:   name,
+		ComponentId: model.OptString(id),
+		Directory:   dir,
+		Files:       map[string]model.FileCredential{},
 	}
 }
 
