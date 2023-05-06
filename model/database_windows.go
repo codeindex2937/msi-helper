@@ -66,13 +66,15 @@ const (
 )
 
 var (
-	modMsi                       = windows.NewLazyDLL("msi.dll")
-	procMsiOpenDatabase          = modMsi.NewProc("MsiOpenDatabaseA")
-	procMsiCloseHandle           = modMsi.NewProc("MsiCloseHandle")
-	procMsiDatabaseCommit        = modMsi.NewProc("MsiDatabaseCommit")
-	procMsiGetSummaryInformation = modMsi.NewProc("MsiGetSummaryInformationA")
-	procMsiDatabaseOpenView      = modMsi.NewProc("MsiDatabaseOpenViewA")
-	proMsiDatabaseImport         = modMsi.NewProc("MsiDatabaseImportA")
+	modMsi                            = windows.NewLazyDLL("msi.dll")
+	procMsiOpenDatabase               = modMsi.NewProc("MsiOpenDatabaseA")
+	procMsiCloseHandle                = modMsi.NewProc("MsiCloseHandle")
+	procMsiDatabaseCommit             = modMsi.NewProc("MsiDatabaseCommit")
+	procMsiGetSummaryInformation      = modMsi.NewProc("MsiGetSummaryInformationA")
+	procMsiDatabaseOpenView           = modMsi.NewProc("MsiDatabaseOpenViewA")
+	procMsiDatabaseImport             = modMsi.NewProc("MsiDatabaseImportA")
+	procMsiDatabaseGenerateTransform  = modMsi.NewProc("MsiDatabaseGenerateTransformA")
+	procMsiCreateTransformSummaryInfo = modMsi.NewProc("MsiCreateTransformSummaryInfoA")
 )
 
 type Database struct {
@@ -333,7 +335,7 @@ func (db Database) OpenView(query string) (View, error) {
 }
 
 func (db Database) Import(folder, file string) error {
-	ret, _, err := proMsiDatabaseImport.Call(
+	ret, _, err := procMsiDatabaseImport.Call(
 		db.handle,
 		uintptr(unsafe.Pointer(&[]byte(folder)[0])),
 		uintptr(unsafe.Pointer(&[]byte(file)[0])),
@@ -341,6 +343,30 @@ func (db Database) Import(folder, file string) error {
 	if ret != 0 {
 		return err
 	}
+	return nil
+}
+
+func (db Database) CreateTransform(other Database, output string) error {
+	ret, _, err := procMsiDatabaseGenerateTransform.Call(
+		db.handle,
+		other.handle,
+		uintptr(unsafe.Pointer(&[]byte(output)[0])),
+	)
+	if ret != 0 {
+		return err
+	}
+
+	ret, _, err = procMsiCreateTransformSummaryInfo.Call(
+		db.handle,
+		other.handle,
+		uintptr(unsafe.Pointer(&[]byte(output)[0])),
+		uintptr(0),
+		uintptr(0),
+	)
+	if ret == 0 {
+		return err
+	}
+
 	return nil
 }
 
