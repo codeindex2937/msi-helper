@@ -9,6 +9,9 @@ import (
 func (h Helper) LaunchAppPostInstall(script Script, comp model.Component, exec string) error {
 	hideCondition := []string{"Installed", "VersionHandler < \"5.00\""}
 
+	if err := h.DB.Insert(script.Binary); err != nil {
+		return err
+	}
 	if err := h.DB.Insert(model.CheckBox{
 		Property: "LaunchApp",
 		Value:    model.OptString("1"),
