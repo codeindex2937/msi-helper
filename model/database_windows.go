@@ -72,6 +72,7 @@ var (
 	procMsiDatabaseCommit        = modMsi.NewProc("MsiDatabaseCommit")
 	procMsiGetSummaryInformation = modMsi.NewProc("MsiGetSummaryInformationA")
 	procMsiDatabaseOpenView      = modMsi.NewProc("MsiDatabaseOpenViewA")
+	proMsiDatabaseImport         = modMsi.NewProc("MsiDatabaseImportA")
 )
 
 type Database struct {
@@ -108,14 +109,14 @@ func (db *Database) Close() error {
 	return nil
 }
 
-func (db *Database) Commit() error {
+func (db Database) Commit() error {
 	if ret, _, err := procMsiDatabaseCommit.Call(db.handle); ret != 0 {
 		return err
 	}
 	return nil
 }
 
-func (db *Database) OpenSummaryInformation(count int) (SummaryInformation, error) {
+func (db Database) OpenSummaryInformation(count int) (SummaryInformation, error) {
 	handle := uintptr(0)
 
 	ret, _, err := procMsiGetSummaryInformation.Call(
@@ -130,7 +131,7 @@ func (db *Database) OpenSummaryInformation(count int) (SummaryInformation, error
 	return SummaryInformation{handle}, nil
 }
 
-func (db *Database) Insert(rows ...interface{}) error {
+func (db Database) Insert(rows ...interface{}) error {
 	for _, r := range rows {
 		t := reflect.TypeOf(r)
 		v := reflect.ValueOf(r)
@@ -166,7 +167,7 @@ func (db *Database) Insert(rows ...interface{}) error {
 	return nil
 }
 
-func (db *Database) Update(data interface{}, fields []string, conds map[string]interface{}) error {
+func (db Database) Update(data interface{}, fields []string, conds map[string]interface{}) error {
 	var rec Record
 	placeholders := []string{}
 	t := reflect.TypeOf(data)
@@ -263,7 +264,7 @@ func (db *Database) Update(data interface{}, fields []string, conds map[string]i
 	return nil
 }
 
-func (db *Database) Delete(data interface{}, conds map[string]interface{}) error {
+func (db Database) Delete(data interface{}, conds map[string]interface{}) error {
 	var rec Record
 	t := reflect.TypeOf(data)
 	v := reflect.ValueOf(data)
@@ -317,7 +318,7 @@ func (db *Database) Delete(data interface{}, conds map[string]interface{}) error
 	return nil
 }
 
-func (db *Database) OpenView(query string) (View, error) {
+func (db Database) OpenView(query string) (View, error) {
 	handle := uintptr(0)
 
 	ret, _, err := procMsiDatabaseOpenView.Call(
@@ -329,6 +330,18 @@ func (db *Database) OpenView(query string) (View, error) {
 		return View{}, err
 	}
 	return View{handle}, nil
+}
+
+func (db Database) Import(folder, file string) error {
+	ret, _, err := proMsiDatabaseImport.Call(
+		db.handle,
+		uintptr(unsafe.Pointer(&[]byte(folder)[0])),
+		uintptr(unsafe.Pointer(&[]byte(file)[0])),
+	)
+	if ret != 0 {
+		return err
+	}
+	return nil
 }
 
 func buildCondition(conds map[string]interface{}) []string {

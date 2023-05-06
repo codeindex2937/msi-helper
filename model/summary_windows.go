@@ -115,7 +115,7 @@ func (info SummaryInformation) SetProperty(prop int, value any) error {
 			uintptr(unsafe.Pointer(nil)),
 			uintptr(unsafe.Pointer(&b[0])),
 		)
-		if ret == 0 {
+		if ret != 0 {
 			return err
 		}
 	case VT_I2, VT_I4:
@@ -136,7 +136,7 @@ func (info SummaryInformation) SetProperty(prop int, value any) error {
 			uintptr(unsafe.Pointer(nil)),
 			uintptr(unsafe.Pointer(nil)),
 		)
-		if ret == 0 {
+		if ret != 0 {
 			return err
 		}
 	case VT_FILETIME:
@@ -149,7 +149,7 @@ func (info SummaryInformation) SetProperty(prop int, value any) error {
 			uintptr(unsafe.Pointer(&v)),
 			uintptr(unsafe.Pointer(nil)),
 		)
-		if ret == 0 {
+		if ret != 0 {
 			return err
 		}
 	}
